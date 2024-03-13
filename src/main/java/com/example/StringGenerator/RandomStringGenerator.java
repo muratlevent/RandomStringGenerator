@@ -14,6 +14,7 @@ public class RandomStringGenerator {
     private static final int MIN_STRING_LENGTH = 8;
     private static final int MAX_STRING_LENGTH = 20;
     private static final int NUMBER_OF_THREADS = 6;
+    private static final int BUFFER_SIZE = 16 * 1024;
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
         writeRandomStringsToFile();
@@ -49,7 +50,7 @@ public class RandomStringGenerator {
     private static void writeStrings(int startLine, int endLine) throws IOException {
         Random random = new Random();
         StringBuilder sb = new StringBuilder(MAX_STRING_LENGTH);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE, true))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE, true),BUFFER_SIZE)) {
             for (int i = startLine; i < endLine; i++) {
                 String randomString = generateRandomString(random, sb, MIN_STRING_LENGTH, MAX_STRING_LENGTH);
                 writer.write(randomString);
