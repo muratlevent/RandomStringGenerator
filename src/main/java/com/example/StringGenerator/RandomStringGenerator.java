@@ -3,9 +3,9 @@ package com.example.StringGenerator;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public class RandomStringGenerator {
@@ -13,8 +13,11 @@ public class RandomStringGenerator {
     private static final int TOTAL_LINES = 1_000_000_000;
     private static final int MIN_STRING_LENGTH = 8;
     private static final int MAX_STRING_LENGTH = 20;
-    private static final int NUMBER_OF_THREADS = 6;
-    private static final int BUFFER_SIZE = 16 * 1024;
+    private static final int NUMBER_OF_THREADS = 8;
+    private static final int BUFFER_SIZE = 8 * 1024 * 1024;
+    private static final int BATCH_SIZE = 1_000_000;
+    private static final String ALPHABET = "abcdefghijklmnopqrstuvwxyz";
+
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
         writeRandomStringsToFile();
@@ -48,22 +51,29 @@ public class RandomStringGenerator {
     }
 
     private static void writeStrings(int startLine, int endLine) throws IOException {
-        Random random = new Random();
         StringBuilder sb = new StringBuilder(MAX_STRING_LENGTH);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE, true),BUFFER_SIZE)) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE, true), BUFFER_SIZE)) {
+            StringBuilder batchBuilder = new StringBuilder();
             for (int i = startLine; i < endLine; i++) {
-                String randomString = generateRandomString(random, sb, MIN_STRING_LENGTH, MAX_STRING_LENGTH);
-                writer.write(randomString);
-                writer.newLine();
+                String randomString = generateRandomString(sb, MIN_STRING_LENGTH, MAX_STRING_LENGTH);
+                batchBuilder.append(randomString).append("\n");
+                if (i % BATCH_SIZE == 0) {
+                    writer.write(batchBuilder.toString());
+                    batchBuilder.setLength(0);
+                }
+            }
+            if (batchBuilder.length() > 0) {
+                writer.write(batchBuilder.toString());
             }
         }
     }
 
-    private static String generateRandomString(Random random, StringBuilder sb, int min, int max) {
+    private static String generateRandomString(StringBuilder sb, int min, int max) {
         sb.setLength(0);
-        int stringLength = min + random.nextInt(max - min + 1);
+        int stringLength = min + ThreadLocalRandom.current().nextInt(max - min + 1);
         for (int i = 0; i < stringLength; i++) {
-            char randomChar = (char) ('a' + random.nextInt(26));
+            int index = ThreadLocalRandom.current().nextInt(ALPHABET.length());
+            char randomChar = ALPHABET.charAt(index);
             sb.append(randomChar);
         }
         return sb.toString();
