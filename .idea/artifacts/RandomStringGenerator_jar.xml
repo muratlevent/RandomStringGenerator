@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="RandomStringGenerator:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/RandomStringGenerator_jar</output-path>
+    <root id="archive" name="RandomStringGenerator.jar">
+      <element id="module-output" name="RandomStringGenerator" />
+    </root>
+  </artifact>
+</component>
